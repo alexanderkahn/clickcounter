@@ -1,0 +1,35 @@
+<idea-plugin version="2">
+    <id>net.alexanderkahn.plugin.intellij.clickcounter</id>
+    <name>Click Counter</name>
+    <version>0.1</version>
+    <vendor email="clickcounter@alexanderkahn.net" url="http://alexanderkahn.net">Alexander Kahn</vendor>
+
+    <description><![CDATA[
+          Forces you to learn the keyboard shortcuts for the menu items you frequently use
+    ]]></description>
+
+    <change-notes><![CDATA[
+      Initial release
+    ]]>
+    </change-notes>
+
+    <idea-version since-build="141.0"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <application-components>
+        <component>
+            <implementation-class>net.alexanderkahn.plugin.intellij.clickcounter.ClickCounter</implementation-class>
+        </component>
+    </application-components>
+    <actions>
+        <group id="ClickCounter.Menu">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action class="net.alexanderkahn.plugin.intellij.clickcounter.config.ClickCounterToggleAction"
+                    id="ClickCounter.Toggle" text="Enable Click Counter"/>
+        </group>
+    </actions>
+
+</idea-plugin>
