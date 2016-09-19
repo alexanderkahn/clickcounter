@@ -3,6 +3,7 @@ package net.alexanderkahn.plugin.intellij.clickcounter;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.impl.EditorComponentImpl;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickCounterConfig;
+import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickInfo;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -14,7 +15,7 @@ public class ClickCounter implements ApplicationComponent, AWTEventListener {
     private ClickCounterConfig config = ClickCounterConfig.getInstance();
 
     public void eventDispatched(AWTEvent event) {
-        if (isLeftMouseClick(event)) {
+        if (config.getEnabled() && isLeftMouseClick(event)) {
             handleMouseEvent((MouseEvent) event);
         }
     }
@@ -27,11 +28,10 @@ public class ClickCounter implements ApplicationComponent, AWTEventListener {
         }
 
         Component sourceComponent = (Component) source;
-        Optional<ShortcutAction> shortcutAction = ShortcutActionFactory.buildShortcutIfAvailable(sourceComponent);
+        Optional<ClickInfo> clickInfo = ClickInfoFactory.buildClickInfoIfAvailable(sourceComponent);
 
-        if (shortcutAction.isPresent()) {
-            PopUpNotifier.firePopUp(shortcutAction.get());
-            renderClickFutile(event);
+        if (clickInfo.isPresent()) {
+            evaluateClickValidity(clickInfo.get(), event);
         }
     }
 
@@ -43,10 +43,12 @@ public class ClickCounter implements ApplicationComponent, AWTEventListener {
         return source.getClass() == EditorComponentImpl.class;
     }
 
-    private void renderClickFutile(MouseEvent event) {
-        if (config.getClickCounter()) {
-            //TODO: On context menu clicks the menu stays up awkwardly after this. Make it not do that.
+    private void evaluateClickValidity(ClickInfo clickInfo, MouseEvent event) {
+        if (clickInfo.shouldConsume()) {
+            PopUpNotifier.firePopUp(clickInfo);
             event.consume();
+        } else {
+            PopUpNotifier.dismissExistingPopUps();
         }
     }
 

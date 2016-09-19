@@ -6,26 +6,28 @@ import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.actionSystem.impl.ActionMenuItem;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickInfo;
 
 import java.awt.*;
 import java.util.Optional;
 
-public class ShortcutActionFactory {
+public class ClickInfoFactory {
 
-    public static Optional<ShortcutAction> buildShortcutIfAvailable(Component eventSource) {
+    private static GlobalClickCounter globalClickCounter = GlobalClickCounter.getInstance();
+
+    public static Optional<ClickInfo> buildClickInfoIfAvailable(Component component) {
         ShortcutAction shortcut = null;
-
-        if (isActionButton(eventSource)) {
-            shortcut = buildShortcut((ActionButton) eventSource);
-        } else if (isActionMenuItem(eventSource)) {
-            shortcut = buildShortcut((ActionMenuItem) eventSource);
+        if (isActionButton(component)) {
+            shortcut = buildShortcut((ActionButton) component);
+        } else if (isActionMenuItem(component)) {
+            shortcut = buildShortcut((ActionMenuItem) component);
         }
 
-        if (shortcut != null && StringUtil.isEmptyOrSpaces(shortcut.getShortcutText())) {
+        if (shortcut == null || StringUtil.isEmptyOrSpaces(shortcut.getShortcutText())) {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(shortcut);
+        return Optional.ofNullable(globalClickCounter.getClickInfo(shortcut));
     }
 
     public static ShortcutAction buildShortcut(ActionButton actionButton) {

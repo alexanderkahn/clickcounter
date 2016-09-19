@@ -8,11 +8,11 @@ public class ClickCounterToggleAction extends ToggleAction {
 
     @Override
     public boolean isSelected(AnActionEvent anActionEvent) {
-        return config.getClickCounter();
+        return config.getEnabled();
     }
 
     @Override
     public void setSelected(AnActionEvent anActionEvent, boolean isSelected) {
-        config.setClickCounter(isSelected);
+        config.setEnabled(isSelected);
     }
 }

@@ -4,15 +4,26 @@ import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickInfo;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class PopUpNotifier {
 
-    public static void firePopUp(ShortcutAction shortcut) {
-        Notification tip = new Notification("Click Counter", AllIcons.General.BalloonInformation, "Click Counter", buildSubtitle(shortcut), shortcut.getShortcutText(), NotificationType.INFORMATION, null);
+    private static final String TITLE = "Click Counter";
+    private final static Set<Notification> displayedTips = new HashSet<>();
+
+    public static void firePopUp(ClickInfo info) {
+        Notification tip = new Notification(TITLE, AllIcons.General.BalloonInformation, TITLE, info.getSubtitle(), info.getContent(), NotificationType.INFORMATION, null);
         Notifications.Bus.notify(tip);
+        displayedTips.add(tip);
     }
 
-    private static String buildSubtitle(ShortcutAction shortcut) {
-        return "Shortcut available for " + shortcut.getDescription();
+    public static void dismissExistingPopUps() {
+        synchronized (displayedTips) {
+            displayedTips.forEach(Notification::expire);
+            displayedTips.clear();
+        }
     }
 }
