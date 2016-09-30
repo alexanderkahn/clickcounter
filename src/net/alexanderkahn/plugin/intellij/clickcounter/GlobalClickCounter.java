@@ -1,6 +1,6 @@
 package net.alexanderkahn.plugin.intellij.clickcounter;
 
-import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
 
 import java.util.Map;
 import java.util.Objects;
@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GlobalClickCounter {
 
     private static final GlobalClickCounter instance = new GlobalClickCounter();
-    private final Map<ShortcutAction, AtomicInteger> clickInstances = new ConcurrentHashMap<>();
-    private final ConsecutiveClickCounter consecutiveClickCounter = new ConsecutiveClickCounter();
+    private final Map<ShortcutAction, AtomicInteger> completedClicks = new ConcurrentHashMap<>();
+    private final ClickAttemptCounter clickAttemptCounter = new ClickAttemptCounter();
 
     private GlobalClickCounter() {
         //don't allow singleton construction
@@ -21,39 +21,34 @@ public class GlobalClickCounter {
         return instance;
     }
 
-    public ClickInfo getClickInfo(ShortcutAction action) {
-        int consecutiveClicks = consecutiveClickCounter.getConsecutiveClicks(action);
-        int clickInstanceCount = getClickInstanceCount(action, consecutiveClicks);
+    public ClickActionInfo getClickActionInfo(ShortcutAction action) {
+        int consecutiveClicks = clickAttemptCounter.getClickAttempts(action);
+        int clickInstanceCount = getCompletedClicks(action, consecutiveClicks);
 
-        ClickInfo info = new ClickInfo(action, clickInstanceCount, consecutiveClicks);
-        if (!info.shouldConsume()) {
-            consecutiveClickCounter.reset();
-        }
+        ClickActionInfo info = new ClickActionInfo(action, clickInstanceCount, consecutiveClicks);
         return info;
     }
 
-    private int getClickInstanceCount(ShortcutAction action, int consecutiveClicks) {
-        int clickInstanceCount;
-        synchronized (clickInstances) {
-            if (!clickInstances.containsKey(action)) {
-                clickInstances.put(action, new AtomicInteger(0));
-            }
-
-            if (consecutiveClicks > 1) {
-                //consecutive clicks should not increment the count
-                clickInstanceCount = clickInstances.get(action).get();
+    public void registerCompleted(ShortcutAction action) {
+        clickAttemptCounter.reset();
+        synchronized (completedClicks) {
+            if (!completedClicks.containsKey(action)) {
+                completedClicks.put(action, new AtomicInteger(1));
             } else {
-                clickInstanceCount = clickInstances.get(action).incrementAndGet();
+                completedClicks.get(action).incrementAndGet();
             }
         }
-        return clickInstanceCount;
     }
 
-    private class ConsecutiveClickCounter {
+    private int getCompletedClicks(ShortcutAction action, int consecutiveClicks) {
+        return completedClicks.getOrDefault(action, new AtomicInteger(0)).get();
+    }
+
+    private class ClickAttemptCounter {
         private ShortcutAction action;
         private int count;
 
-        int getConsecutiveClicks(ShortcutAction action) {
+        int getClickAttempts(ShortcutAction action) {
             if (!Objects.equals(this.action, action)) {
                 this.action = action;
                 this.count = 0;

@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.actionSystem.impl.ActionMenuItem;
 import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
 
 import java.awt.*;
 import java.util.Optional;
@@ -15,7 +15,7 @@ public class ClickInfoFactory {
 
     private static GlobalClickCounter globalClickCounter = GlobalClickCounter.getInstance();
 
-    public static Optional<ClickInfo> buildClickInfoIfAvailable(Component component) {
+    public static Optional<ClickActionInfo> buildClickInfoIfAvailable(Component component) {
         ShortcutAction shortcut = null;
         if (isActionButton(component)) {
             shortcut = buildShortcut((ActionButton) component);
@@ -27,7 +27,7 @@ public class ClickInfoFactory {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(globalClickCounter.getClickInfo(shortcut));
+        return Optional.ofNullable(globalClickCounter.getClickActionInfo(shortcut));
     }
 
     public static ShortcutAction buildShortcut(ActionButton actionButton) {
