@@ -9,6 +9,7 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.impl.EditorComponentImpl;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickCounterConfig;
+import net.alexanderkahn.plugin.intellij.clickcounter.event.ShortcutActionFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -20,7 +21,6 @@ import java.util.Optional;
 public class ClickCounterListener implements ApplicationComponent, AWTEventListener, AnActionListener {
     private ClickCounterConfig config = ClickCounterConfig.getInstance();
     private ClickCounter counter = ClickCounter.getInstance();
-    private ClickInfoFactory clickInfoFactory = new ClickInfoFactory(counter);
 
     @Override
     public void eventDispatched(AWTEvent event) {
@@ -54,9 +54,9 @@ public class ClickCounterListener implements ApplicationComponent, AWTEventListe
         }
 
         Component sourceComponent = (Component) source;
-        Optional<ClickActionInfo> clickInfo = clickInfoFactory.buildClickInfoIfAvailable(sourceComponent);
+        Optional<ShortcutAction> shortcutAction = ShortcutActionFactory.fromComponent(sourceComponent);
 
-        clickInfo.ifPresent(clickActionInfo -> evaluateClickValidity(clickActionInfo, event));
+        shortcutAction.ifPresent(action -> evaluateClickValidity(action, event));
     }
 
     private void handleKeyEvent(KeyEvent event) {
@@ -72,7 +72,8 @@ public class ClickCounterListener implements ApplicationComponent, AWTEventListe
         return source.getClass() == EditorComponentImpl.class;
     }
 
-    private void evaluateClickValidity(ClickActionInfo clickActionInfo, MouseEvent event) {
+    private void evaluateClickValidity(ShortcutAction shortcutAction, MouseEvent event) {
+        ClickActionInfo clickActionInfo = counter.getClickActionInfo(shortcutAction);
         if (clickActionInfo.shouldConsume()) {
             event.consume();
             PopUpNotifier.firePopUp(clickActionInfo);
