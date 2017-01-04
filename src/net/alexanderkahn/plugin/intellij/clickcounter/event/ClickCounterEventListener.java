@@ -1,4 +1,4 @@
-package net.alexanderkahn.plugin.intellij.clickcounter;
+package net.alexanderkahn.plugin.intellij.clickcounter.event;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -7,10 +7,11 @@ import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.impl.EditorComponentImpl;
-import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.ClickCounter;
+import net.alexanderkahn.plugin.intellij.clickcounter.ShortcutAction;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickCounterConfig;
-import net.alexanderkahn.plugin.intellij.clickcounter.event.EventType;
-import net.alexanderkahn.plugin.intellij.clickcounter.event.ShortcutActionFactory;
+import net.alexanderkahn.plugin.intellij.clickcounter.notification.NotificationManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -19,20 +20,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Optional;
 
-public class ClickCounterListener implements ApplicationComponent, AWTEventListener, AnActionListener {
-    private ClickCounterConfig config = ClickCounterConfig.getInstance();
-    private ClickCounter counter = ClickCounter.getInstance();
+public class ClickCounterEventListener implements ApplicationComponent, AWTEventListener, AnActionListener {
+    private ClickCounter counter = new ClickCounter(ClickCounterConfig.getInstance());
 
     @Override
     public void eventDispatched(AWTEvent event) {
-        if (config.getEnabled() && isLeftMouseClick(event)) {
+        if (counter.getConfig().getEnabled() && isLeftMouseClick(event)) {
             handleMouseEvent((MouseEvent) event);
         }
     }
 
     @Override
     public void beforeActionPerformed(AnAction anAction, DataContext dataContext, AnActionEvent anActionEvent) {
-        if (anActionEvent.getInputEvent() instanceof KeyEvent) {
+        if (counter.getConfig().getEnabled() && anActionEvent.getInputEvent() instanceof KeyEvent) {
             handleKeyEvent((KeyEvent) anActionEvent.getInputEvent());
         }
     }

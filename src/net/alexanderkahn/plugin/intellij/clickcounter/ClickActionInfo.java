@@ -1,12 +1,11 @@
-package net.alexanderkahn.plugin.intellij.clickcounter.config;
-
-import net.alexanderkahn.plugin.intellij.clickcounter.ShortcutAction;
+package net.alexanderkahn.plugin.intellij.clickcounter;
 
 public class ClickActionInfo {
 
     private ShortcutAction shortcutAction;
     private int completedClicks;
     private int clickAttempts;
+    
     private static final String DESCRIPTION_TEXT_FORMAT = "Press %s (or click %s more times)";
 
     public ClickActionInfo(ShortcutAction shortcutAction, int completedClicks, int clickAttempts) {

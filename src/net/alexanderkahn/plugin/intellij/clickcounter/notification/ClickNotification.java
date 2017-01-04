@@ -1,9 +1,10 @@
-package net.alexanderkahn.plugin.intellij.clickcounter;
+package net.alexanderkahn.plugin.intellij.clickcounter.notification;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.ShortcutAction;
 
 public class ClickNotification extends Notification {
 

@@ -1,8 +1,9 @@
-package net.alexanderkahn.plugin.intellij.clickcounter;
+package net.alexanderkahn.plugin.intellij.clickcounter.notification;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.Notifications;
-import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.ShortcutAction;
 
 import java.util.Collection;
 import java.util.HashSet;

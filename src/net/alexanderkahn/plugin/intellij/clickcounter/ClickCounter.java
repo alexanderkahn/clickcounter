@@ -1,6 +1,6 @@
 package net.alexanderkahn.plugin.intellij.clickcounter;
 
-import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickCounterConfig;
 import net.alexanderkahn.plugin.intellij.clickcounter.event.EventType;
 import org.apache.commons.lang.NotImplementedException;
 
@@ -11,16 +11,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClickCounter {
 
-    private static final ClickCounter instance = new ClickCounter();
+    private final ClickCounterConfig config;
+    
     private final Map<ShortcutAction, AtomicInteger> completedClicks = new ConcurrentHashMap<>();
     private final ClickAttemptCounter clickAttemptCounter = new ClickAttemptCounter();
 
-    private ClickCounter() {
-        //fudge you, I'm a singleton
+    public ClickCounter(ClickCounterConfig config) {
+        this.config = config;
     }
-
-    public static ClickCounter getInstance() {
-        return instance;
+    
+    public ClickCounterConfig getConfig() {
+        return config;
     }
 
     public ClickActionInfo getClickActionInfo(ShortcutAction action) {
