@@ -13,10 +13,10 @@ import java.util.Optional;
 
 public class ClickInfoFactory {
 
-    private GlobalClickCounter globalClickCounter;
+    private ClickCounter clickCounter;
 
-    public ClickInfoFactory(GlobalClickCounter globalClickCounter) {
-        this.globalClickCounter = globalClickCounter;
+    public ClickInfoFactory(ClickCounter clickCounter) {
+        this.clickCounter = clickCounter;
     }
 
     public Optional<ClickActionInfo> buildClickInfoIfAvailable(Component component) {
@@ -31,7 +31,7 @@ public class ClickInfoFactory {
             return Optional.empty();
         }
 
-        return Optional.ofNullable(globalClickCounter.getClickActionInfo(shortcut));
+        return Optional.ofNullable(clickCounter.getClickActionInfo(shortcut));
     }
 
     public static ShortcutAction buildShortcut(ActionButton actionButton) {

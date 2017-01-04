@@ -21,7 +21,8 @@
 
     <application-components>
         <component>
-            <implementation-class>net.alexanderkahn.plugin.intellij.clickcounter.ClickCounter</implementation-class>
+            <implementation-class>net.alexanderkahn.plugin.intellij.clickcounter.ClickCounterListener
+            </implementation-class>
         </component>
     </application-components>
     <actions>
