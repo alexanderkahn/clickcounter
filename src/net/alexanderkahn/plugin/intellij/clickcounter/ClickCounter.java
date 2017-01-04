@@ -19,7 +19,8 @@ import java.util.Optional;
 
 public class ClickCounter implements ApplicationComponent, AWTEventListener, AnActionListener {
     private ClickCounterConfig config = ClickCounterConfig.getInstance();
-    private GlobalClickCounter counter = GlobalClickCounter.getInstance(); //TODO: not good, why is this referenced from multiple places
+    private GlobalClickCounter counter = GlobalClickCounter.getInstance();
+    private ClickInfoFactory clickInfoFactory = new ClickInfoFactory(counter);
 
     @Override
     public void eventDispatched(AWTEvent event) {
@@ -53,7 +54,7 @@ public class ClickCounter implements ApplicationComponent, AWTEventListener, AnA
         }
 
         Component sourceComponent = (Component) source;
-        Optional<ClickActionInfo> clickInfo = ClickInfoFactory.buildClickInfoIfAvailable(sourceComponent);
+        Optional<ClickActionInfo> clickInfo = clickInfoFactory.buildClickInfoIfAvailable(sourceComponent);
 
         clickInfo.ifPresent(clickActionInfo -> evaluateClickValidity(clickActionInfo, event));
     }
