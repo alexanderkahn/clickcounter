@@ -1,21 +1,21 @@
 package net.alexanderkahn.plugin.intellij.clickcounter;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
 
+import java.awt.event.KeyEvent;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PopUpNotifier {
 
-    private static final String TITLE = "Click Counter";
-    private final static Set<Notification> displayedTips = new HashSet<>();
+    private final static Set<ClickNotification> displayedTips = new HashSet<>();
 
     public static void firePopUp(ClickActionInfo info) {
-        Notification tip = new Notification(TITLE, AllIcons.General.BalloonInformation, TITLE, info.getSubtitle(), info.getContent(), NotificationType.INFORMATION, null);
+        ClickNotification tip = new ClickNotification(info);
         Notifications.Bus.notify(tip);
         displayedTips.add(tip);
     }
@@ -24,6 +24,14 @@ public class PopUpNotifier {
         synchronized (displayedTips) {
             displayedTips.forEach(Notification::expire);
             displayedTips.clear();
+        }
+    }
+
+    public static void dismissMatchingEvents(KeyEvent event) {
+        synchronized (displayedTips) {
+            Collection<ClickNotification> matchingNotifications = displayedTips.stream().filter(notification -> notification.shouldExpire(event)).collect(Collectors.toList());
+            matchingNotifications.forEach(ClickNotification::expire);
+            displayedTips.removeAll(matchingNotifications);
         }
     }
 }

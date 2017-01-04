@@ -1,5 +1,10 @@
 package net.alexanderkahn.plugin.intellij.clickcounter;
 
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
+import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.impl.EditorComponentImpl;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
@@ -8,17 +13,36 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.event.AWTEventListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Optional;
 
-public class ClickCounter implements ApplicationComponent, AWTEventListener {
+public class ClickCounter implements ApplicationComponent, AWTEventListener, AnActionListener {
     private ClickCounterConfig config = ClickCounterConfig.getInstance();
-    private GlobalClickCounter counter = GlobalClickCounter.getInstance(); //not good class design
+    private GlobalClickCounter counter = GlobalClickCounter.getInstance(); //TODO: not good, why is this referenced from multiple places
 
+    @Override
     public void eventDispatched(AWTEvent event) {
         if (config.getEnabled() && isLeftMouseClick(event)) {
             handleMouseEvent((MouseEvent) event);
         }
+    }
+
+    @Override
+    public void beforeActionPerformed(AnAction anAction, DataContext dataContext, AnActionEvent anActionEvent) {
+        if (anActionEvent.getInputEvent() instanceof KeyEvent) {
+            handleKeyEvent((KeyEvent) anActionEvent.getInputEvent());
+        }
+    }
+
+    @Override
+    public void afterActionPerformed(AnAction anAction, DataContext dataContext, AnActionEvent anActionEvent) {
+
+    }
+
+    @Override
+    public void beforeEditorTyping(char c, DataContext dataContext) {
+
     }
 
     private void handleMouseEvent(MouseEvent event) {
@@ -31,9 +55,12 @@ public class ClickCounter implements ApplicationComponent, AWTEventListener {
         Component sourceComponent = (Component) source;
         Optional<ClickActionInfo> clickInfo = ClickInfoFactory.buildClickInfoIfAvailable(sourceComponent);
 
-        if (clickInfo.isPresent()) {
-            evaluateClickValidity(clickInfo.get(), event);
-        }
+        clickInfo.ifPresent(clickActionInfo -> evaluateClickValidity(clickActionInfo, event));
+    }
+
+    private void handleKeyEvent(KeyEvent event) {
+        counter.registerCompletedWithShortcut(event);
+        PopUpNotifier.dismissMatchingEvents(event);
     }
 
     private boolean isNotComponent(Object source) {
@@ -46,10 +73,10 @@ public class ClickCounter implements ApplicationComponent, AWTEventListener {
 
     private void evaluateClickValidity(ClickActionInfo clickActionInfo, MouseEvent event) {
         if (clickActionInfo.shouldConsume()) {
-            PopUpNotifier.firePopUp(clickActionInfo);
             event.consume();
+            PopUpNotifier.firePopUp(clickActionInfo);
         } else {
-            counter.registerCompleted(clickActionInfo.getShortcutAction());
+            counter.registerCompletedWithClick(clickActionInfo.getShortcutAction());
             PopUpNotifier.dismissExistingPopUps();
         }
     }
@@ -60,10 +87,12 @@ public class ClickCounter implements ApplicationComponent, AWTEventListener {
 
     public void initComponent() {
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
+        ActionManagerEx.getInstanceEx().addAnActionListener(this);
     }
 
     public void disposeComponent() {
         Toolkit.getDefaultToolkit().removeAWTEventListener(this);
+        ActionManagerEx.getInstanceEx().removeAnActionListener(this);
     }
 
     @NotNull

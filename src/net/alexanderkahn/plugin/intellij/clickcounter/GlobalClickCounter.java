@@ -2,6 +2,7 @@ package net.alexanderkahn.plugin.intellij.clickcounter;
 
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
 
+import java.awt.event.KeyEvent;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +15,7 @@ public class GlobalClickCounter {
     private final ClickAttemptCounter clickAttemptCounter = new ClickAttemptCounter();
 
     private GlobalClickCounter() {
-        //don't allow singleton construction
+        //fudge you, I'm a singleton
     }
 
     public static GlobalClickCounter getInstance() {
@@ -25,11 +26,16 @@ public class GlobalClickCounter {
         int consecutiveClicks = clickAttemptCounter.getClickAttempts(action);
         int clickInstanceCount = getCompletedClicks(action, consecutiveClicks);
 
-        ClickActionInfo info = new ClickActionInfo(action, clickInstanceCount, consecutiveClicks);
-        return info;
+        return new ClickActionInfo(action, clickInstanceCount, consecutiveClicks);
     }
 
-    public void registerCompleted(ShortcutAction action) {
+    public void registerCompletedWithShortcut(KeyEvent event) {
+        if (clickAttemptCounter.matchesAction(event)) {
+            clickAttemptCounter.reset();
+        }
+    }
+
+    public void registerCompletedWithClick(ShortcutAction action) {
         clickAttemptCounter.reset();
         synchronized (completedClicks) {
             if (!completedClicks.containsKey(action)) {
@@ -54,6 +60,10 @@ public class GlobalClickCounter {
                 this.count = 0;
             }
             return ++this.count;
+        }
+
+        boolean matchesAction(KeyEvent event) {
+            return action != null && action.matchesKeyEvent(event);
         }
 
         void reset() {
