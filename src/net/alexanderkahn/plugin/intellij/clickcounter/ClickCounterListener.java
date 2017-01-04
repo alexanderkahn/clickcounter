@@ -63,7 +63,7 @@ public class ClickCounterListener implements ApplicationComponent, AWTEventListe
     private void handleKeyEvent(KeyEvent event) {
         ShortcutAction shortcutAction = ShortcutActionFactory.fromKeyEvent(event);
         counter.registerCompleted(shortcutAction, EventType.KEY_PRESS);
-        PopUpNotifier.dismissMatchingEvents(shortcutAction);
+        NotificationManager.dismissMatching(shortcutAction);
     }
 
     private boolean isNotComponent(Object source) {
@@ -78,10 +78,10 @@ public class ClickCounterListener implements ApplicationComponent, AWTEventListe
         ClickActionInfo clickActionInfo = counter.getClickActionInfo(shortcutAction);
         if (clickActionInfo.shouldConsume()) {
             event.consume();
-            PopUpNotifier.firePopUp(clickActionInfo);
+            NotificationManager.displayNotification(clickActionInfo);
         } else {
             counter.registerCompleted(clickActionInfo.getShortcutAction(), EventType.MOUSE_CLICK);
-            PopUpNotifier.dismissExistingPopUps();
+            NotificationManager.dismissAll();
         }
     }
 

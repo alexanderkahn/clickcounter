@@ -9,24 +9,24 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class PopUpNotifier {
+public class NotificationManager {
 
     private final static Set<ClickNotification> displayedTips = new HashSet<>();
 
-    public static void firePopUp(ClickActionInfo info) {
+    public static void displayNotification(ClickActionInfo info) {
         ClickNotification tip = new ClickNotification(info);
         Notifications.Bus.notify(tip);
         displayedTips.add(tip);
     }
 
-    public static void dismissExistingPopUps() {
+    public static void dismissAll() {
         synchronized (displayedTips) {
             displayedTips.forEach(Notification::expire);
             displayedTips.clear();
         }
     }
 
-    public static void dismissMatchingEvents(ShortcutAction actionToMatch) {
+    public static void dismissMatching(ShortcutAction actionToMatch) {
         synchronized (displayedTips) {
             Collection<ClickNotification> matchingNotifications = displayedTips.stream().filter(notification -> notification.shouldExpire(actionToMatch)).collect(Collectors.toList());
             matchingNotifications.forEach(ClickNotification::expire);
