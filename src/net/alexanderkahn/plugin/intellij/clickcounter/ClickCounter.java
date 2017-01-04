@@ -1,8 +1,9 @@
 package net.alexanderkahn.plugin.intellij.clickcounter;
 
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.event.EventType;
+import org.apache.commons.lang.NotImplementedException;
 
-import java.awt.event.KeyEvent;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,13 +30,26 @@ public class ClickCounter {
         return new ClickActionInfo(action, clickInstanceCount, consecutiveClicks);
     }
 
-    public void registerCompletedWithShortcut(KeyEvent event) {
-        if (clickAttemptCounter.matchesAction(event)) {
+    public void registerCompleted(ShortcutAction action, EventType type) {
+        switch (type) {
+            case KEY_PRESS:
+                registerCompletedWithShortcut(action);
+                break;
+            case MOUSE_CLICK:
+                registerCompletedWithClick(action);
+                break;
+            default:
+                throw new NotImplementedException("Unrecognized event type: " + type);
+        }
+    }
+
+    private void registerCompletedWithShortcut(ShortcutAction action) {
+        if (clickAttemptCounter.matchesCurrentAction(action)) {
             clickAttemptCounter.reset();
         }
     }
 
-    public void registerCompletedWithClick(ShortcutAction action) {
+    private void registerCompletedWithClick(ShortcutAction action) {
         clickAttemptCounter.reset();
         synchronized (completedClicks) {
             if (!completedClicks.containsKey(action)) {
@@ -62,8 +76,8 @@ public class ClickCounter {
             return ++this.count;
         }
 
-        boolean matchesAction(KeyEvent event) {
-            return action != null && action.matchesKeyEvent(event);
+        boolean matchesCurrentAction(ShortcutAction actionToTest) {
+            return action != null && action.equals(actionToTest);
         }
 
         void reset() {

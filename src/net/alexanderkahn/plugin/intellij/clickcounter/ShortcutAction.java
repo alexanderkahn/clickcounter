@@ -1,67 +1,34 @@
 package net.alexanderkahn.plugin.intellij.clickcounter;
 
-import java.awt.event.KeyEvent;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Collection;
+import java.util.Objects;
 
 public class ShortcutAction {
-    private String shortcutText;
+    private Collection<String> shortcutKeys;
     private String description;
 
-    public ShortcutAction(String shortcutText, String description) {
-        this.shortcutText = shortcutText;
+    public ShortcutAction(Collection<String> shortcutKeys, String description) {
+        this.shortcutKeys = shortcutKeys;
         this.description = description;
     }
 
     public String getShortcutText() {
-        return shortcutText;
+        return StringUtils.join(shortcutKeys, "");
     }
 
     public String getDescription() {
         return description;
     }
 
-    public boolean matchesKeyEvent(KeyEvent event) {
-        Collection<String> pressedKeys = getKeyPresses(event);
-        for (String keyPress : pressedKeys) {
-            if (!shortcutText.contains(keyPress)) {
-                return false;
-            }
-        }
+    public boolean matchesShortcut(ShortcutAction otherAction) {
+        return otherAction != null
+                && this.shortcutKeys != null
+                && otherAction.shortcutKeys != null
+                && this.shortcutKeys.size() == otherAction.shortcutKeys.size()
+                && this.shortcutKeys.containsAll(otherAction.shortcutKeys);
 
-        for (String expected : getExpectedKeys()) {
-            if (!pressedKeys.contains(expected)) {
-                return false;
-            }
-        }
-
-        return true;
-
-    }
-
-    private Collection<String> getExpectedKeys() {
-        Matcher m = Pattern.compile("F?.").matcher(shortcutText);
-        Collection<String> expectedKeys = new HashSet<>(shortcutText.length());
-        while (m.find()) {
-            expectedKeys.add(m.group());
-        }
-        return expectedKeys;
-    }
-
-    private Collection<String> getKeyPresses(KeyEvent event) {
-        Map<String, Boolean> eventChars = new HashMap<>();
-        eventChars.put("⌘", event.isMetaDown()); //TODO: this won't work on Windows (or Linux?)
-        eventChars.put("⌃", event.isControlDown());
-        eventChars.put("⌥", event.isAltDown());
-        eventChars.put("⇧", event.isShiftDown());
-        eventChars.put(KeyEvent.getKeyText(event.getKeyCode()), true);
-
-        return eventChars.entrySet().stream()
-                .filter(entry -> Boolean.TRUE.equals(entry.getValue()))
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
     }
 
 
@@ -70,12 +37,12 @@ public class ShortcutAction {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ShortcutAction that = (ShortcutAction) o;
-        return Objects.equals(shortcutText, that.shortcutText) &&
+        return Objects.equals(shortcutKeys, that.shortcutKeys) &&
                 Objects.equals(description, that.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(shortcutText, description);
+        return Objects.hash(shortcutKeys, description);
     }
 }

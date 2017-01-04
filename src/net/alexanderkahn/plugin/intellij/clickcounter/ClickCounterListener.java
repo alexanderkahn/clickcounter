@@ -9,6 +9,7 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.impl.EditorComponentImpl;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickCounterConfig;
+import net.alexanderkahn.plugin.intellij.clickcounter.event.EventType;
 import net.alexanderkahn.plugin.intellij.clickcounter.event.ShortcutActionFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,8 +61,9 @@ public class ClickCounterListener implements ApplicationComponent, AWTEventListe
     }
 
     private void handleKeyEvent(KeyEvent event) {
-        counter.registerCompletedWithShortcut(event);
-        PopUpNotifier.dismissMatchingEvents(event);
+        ShortcutAction shortcutAction = ShortcutActionFactory.fromKeyEvent(event);
+        counter.registerCompleted(shortcutAction, EventType.KEY_PRESS);
+        PopUpNotifier.dismissMatchingEvents(shortcutAction);
     }
 
     private boolean isNotComponent(Object source) {
@@ -78,7 +80,7 @@ public class ClickCounterListener implements ApplicationComponent, AWTEventListe
             event.consume();
             PopUpNotifier.firePopUp(clickActionInfo);
         } else {
-            counter.registerCompletedWithClick(clickActionInfo.getShortcutAction());
+            counter.registerCompleted(clickActionInfo.getShortcutAction(), EventType.MOUSE_CLICK);
             PopUpNotifier.dismissExistingPopUps();
         }
     }

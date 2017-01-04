@@ -5,8 +5,6 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickActionInfo;
 
-import java.awt.event.KeyEvent;
-
 public class ClickNotification extends Notification {
 
     private ClickActionInfo clickActionInfo;
@@ -19,7 +17,7 @@ public class ClickNotification extends Notification {
         this.clickActionInfo = clickActionInfo;
     }
 
-    public boolean shouldExpire(KeyEvent event) {
-        return this.clickActionInfo.getShortcutAction().matchesKeyEvent(event);
+    public boolean shouldExpire(ShortcutAction action) {
+        return this.clickActionInfo.getShortcutAction().matchesShortcut(action);
     }
 }
