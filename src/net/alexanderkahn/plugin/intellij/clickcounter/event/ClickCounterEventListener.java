@@ -7,21 +7,22 @@ import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.editor.impl.EditorComponentImpl;
-import net.alexanderkahn.plugin.intellij.clickcounter.ClickActionInfo;
+import net.alexanderkahn.plugin.intellij.clickcounter.ActionResult;
 import net.alexanderkahn.plugin.intellij.clickcounter.ClickCounter;
 import net.alexanderkahn.plugin.intellij.clickcounter.ShortcutAction;
 import net.alexanderkahn.plugin.intellij.clickcounter.config.ClickCounterConfig;
-import net.alexanderkahn.plugin.intellij.clickcounter.notification.NotificationManager;
+import net.alexanderkahn.plugin.intellij.clickcounter.notification.IntelliJNotificationManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.event.AWTEventListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Optional;
 
 public class ClickCounterEventListener implements ApplicationComponent, AWTEventListener, AnActionListener {
-    private ClickCounter counter = new ClickCounter(ClickCounterConfig.getInstance());
+    private ClickCounter counter = new ClickCounter(ClickCounterConfig.getInstance(), new IntelliJNotificationManager());
 
     @Override
     public void eventDispatched(AWTEvent event) {
@@ -57,13 +58,19 @@ public class ClickCounterEventListener implements ApplicationComponent, AWTEvent
         Component sourceComponent = (Component) source;
         Optional<ShortcutAction> shortcutAction = ShortcutActionFactory.fromComponent(sourceComponent);
 
-        shortcutAction.ifPresent(action -> evaluateClickValidity(action, event));
+        shortcutAction.ifPresent(shortcutAction1 -> processEvent(event, shortcutAction1, EventType.MOUSE_CLICK));
+    }
+
+    private void processEvent(InputEvent event, ShortcutAction shortcutAction, EventType eventType) {
+        ActionResult result = counter.processAction(shortcutAction, eventType);
+        if (result.isBlocked()) {
+            event.consume();
+        }
     }
 
     private void handleKeyEvent(KeyEvent event) {
         ShortcutAction shortcutAction = ShortcutActionFactory.fromKeyEvent(event);
-        counter.registerCompleted(shortcutAction, EventType.KEY_PRESS);
-        NotificationManager.dismissMatching(shortcutAction);
+        processEvent(event, shortcutAction, EventType.KEY_PRESS);
     }
 
     private boolean isNotComponent(Object source) {
@@ -72,17 +79,6 @@ public class ClickCounterEventListener implements ApplicationComponent, AWTEvent
 
     private boolean isEditorComponent(Object source) {
         return source.getClass() == EditorComponentImpl.class;
-    }
-
-    private void evaluateClickValidity(ShortcutAction shortcutAction, MouseEvent event) {
-        ClickActionInfo clickActionInfo = counter.getClickActionInfo(shortcutAction);
-        if (clickActionInfo.shouldConsume()) {
-            event.consume();
-            NotificationManager.displayNotification(clickActionInfo);
-        } else {
-            counter.registerCompleted(clickActionInfo.getShortcutAction(), EventType.MOUSE_CLICK);
-            NotificationManager.dismissAll();
-        }
     }
 
     private boolean isLeftMouseClick(AWTEvent event) {

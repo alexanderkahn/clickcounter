@@ -3,19 +3,19 @@ package net.alexanderkahn.plugin.intellij.clickcounter;
 public class ClickActionInfo {
 
     private ShortcutAction shortcutAction;
-    private int completedClicks;
-    private int clickAttempts;
-    
+    private int discreteClicks;
+    private int consecutiveClickAttempts;
+
     private static final String DESCRIPTION_TEXT_FORMAT = "Press %s (or click %s more times)";
 
-    public ClickActionInfo(ShortcutAction shortcutAction, int completedClicks, int clickAttempts) {
+    public ClickActionInfo(ShortcutAction shortcutAction, int discreteClicks, int consecutiveClickAttempts) {
         this.shortcutAction = shortcutAction;
-        this.completedClicks = completedClicks;
-        this.clickAttempts = clickAttempts;
+        this.discreteClicks = discreteClicks;
+        this.consecutiveClickAttempts = consecutiveClickAttempts;
     }
 
-    public boolean shouldConsume() {
-        return completedClicks > clickAttempts;
+    public boolean shouldBlockAction() {
+        return discreteClicks > consecutiveClickAttempts;
     }
 
     public String getSubtitle() {
@@ -23,7 +23,7 @@ public class ClickActionInfo {
     }
 
     public String getContent() {
-        return String.format(DESCRIPTION_TEXT_FORMAT, shortcutAction.getShortcutText(), completedClicks - clickAttempts);
+        return String.format(DESCRIPTION_TEXT_FORMAT, shortcutAction.getShortcutText(), discreteClicks - consecutiveClickAttempts);
     }
 
     public ShortcutAction getShortcutAction() {
