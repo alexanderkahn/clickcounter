@@ -28,4 +28,11 @@ public class IntelliJNotificationManager implements NotificationManager {
             displayedTips.removeAll(matchingNotifications);
         }
     }
+
+    @Override
+    public void dismissExpired() {
+        synchronized (displayedTips) {
+            displayedTips.removeAll(displayedTips.stream().filter(ClickNotification::isExpired).collect(Collectors.toList()));
+        }
+    }
 }

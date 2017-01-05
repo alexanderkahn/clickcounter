@@ -8,4 +8,6 @@ public interface NotificationManager {
     void displayNotification(ClickActionInfo info);
 
     void dismissMatching(ShortcutAction actionToMatch);
+
+    void dismissExpired();
 }

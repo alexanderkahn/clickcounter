@@ -28,6 +28,8 @@ public class ClickCounter {
     }
 
     public ActionResult processAction(ShortcutAction action, EventType type) {
+        notificationManager.dismissExpired();
+        
         switch (type) {
             case KEY_PRESS:
                 return processKeyAction(action);
