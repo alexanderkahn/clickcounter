@@ -2,14 +2,14 @@ package net.alexanderkahn.plugin.intellij.clickcounter;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 public class ShortcutAction {
-    private Collection<String> shortcutKeys;
+    private List<String> shortcutKeys;
     private String description;
 
-    public ShortcutAction(Collection<String> shortcutKeys, String description) {
+    public ShortcutAction(List<String> shortcutKeys, String description) {
         this.shortcutKeys = shortcutKeys;
         this.description = description;
     }

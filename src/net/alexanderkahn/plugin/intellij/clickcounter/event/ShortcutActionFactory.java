@@ -11,6 +11,7 @@ import net.alexanderkahn.plugin.intellij.clickcounter.ShortcutAction;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -27,12 +28,12 @@ public class ShortcutActionFactory {
         return new ShortcutAction(getKeyPresses(event), null);
     }
 
-    private static Collection<String> getKeyPresses(KeyEvent event) {
+    private static List<String> getKeyPresses(KeyEvent event) {
         Map<String, Boolean> eventChars = new HashMap<>();
-        eventChars.put("⌘", event.isMetaDown()); //TODO: this won't work on Windows (or Linux?)
-        eventChars.put("⌃", event.isControlDown());
-        eventChars.put("⌥", event.isAltDown());
-        eventChars.put("⇧", event.isShiftDown());
+        eventChars.put(KeyEvent.getKeyText(KeyEvent.VK_META), event.isMetaDown());
+        eventChars.put(KeyEvent.getKeyText(KeyEvent.VK_CONTROL), event.isControlDown());
+        eventChars.put(KeyEvent.getKeyText(KeyEvent.VK_ALT), event.isAltDown());
+        eventChars.put(KeyEvent.getKeyText(KeyEvent.VK_SHIFT), event.isShiftDown());
         eventChars.put(KeyEvent.getKeyText(event.getKeyCode()), true);
 
         return eventChars.entrySet().stream()
@@ -75,8 +76,8 @@ public class ShortcutActionFactory {
         return new ShortcutAction(getShortcutKeys(shortcutText), description);
     }
 
-    private static Collection<String> getShortcutKeys(String shortcutText) {
-        Collection<String> shortcutKeys = new HashSet<>(shortcutText.length());
+    private static List<String> getShortcutKeys(String shortcutText) {
+        List<String> shortcutKeys = new ArrayList<>(shortcutText.length());
         Matcher m = pattern.matcher(shortcutText);
         while (m.find()) {
             shortcutKeys.add(m.group());

@@ -58,7 +58,7 @@ public class ClickCounterEventListener implements ApplicationComponent, AWTEvent
         Component sourceComponent = (Component) source;
         Optional<ShortcutAction> shortcutAction = ShortcutActionFactory.fromComponent(sourceComponent);
 
-        shortcutAction.ifPresent(shortcutAction1 -> processEvent(event, shortcutAction1, EventType.MOUSE_CLICK));
+        shortcutAction.ifPresent(action -> processEvent(event, action, EventType.MOUSE_CLICK));
     }
 
     private void processEvent(InputEvent event, ShortcutAction shortcutAction, EventType eventType) {

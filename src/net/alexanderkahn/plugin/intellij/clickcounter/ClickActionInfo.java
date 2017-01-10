@@ -27,6 +27,6 @@ public class ClickActionInfo {
     }
 
     public ShortcutAction getShortcutAction() {
-        return shortcutAction; //TODO: this is shitty
+        return shortcutAction;
     }
 }
